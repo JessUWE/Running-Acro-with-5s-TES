@@ -212,7 +212,7 @@ class AcroTableMeans(BaseLocalProcessing):
 
     def python_analysis(self, sql_result):
         rows = sql_result.fetchall()
-        columns = list(sql_result.keys())
+        columns = pd.Index(sql_result.keys())
         df = pd.DataFrame(rows, columns=columns)
 
         acro_session = acro_module.ACRO(suppress=True)
@@ -224,16 +224,19 @@ class AcroTableMeans(BaseLocalProcessing):
             margins=True,
         )
 
+
+        ## if you don't need the acro output zipped, just finalise it to self.output_folder and avoid all the timestamps and file ops.
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         output_folder = f"acro_output_{timestamp}"
         acro_session.finalise(output_folder)
 
         zip_path = shutil.make_archive("acro_output", "zip", output_folder)
-        return {
-            "acro_output_zip": zip_path,
-            "acro_status": "finalised",
-            "table": table.to_dict(),
-        }
+        shutil.copy(zip_path, self.output_folder / f"acro_output_{timestamp}.zip")
+        
+        ## should return numerical results - that's what gets processed after the end of this function
+        ## table.to_dict should be good enough, as it can be restored easily to a df for aggregation later,
+        ## and reasonably easily read for output checking
+        return table.to_dict()
 
 
 class AcroTableCounts(BaseLocalProcessing):
@@ -268,7 +271,7 @@ class AcroTableCounts(BaseLocalProcessing):
 
     def python_analysis(self, sql_result):
         rows = sql_result.fetchall()
-        columns = list(sql_result.keys())
+        columns = pd.Index(sql_result.keys())
         df = pd.DataFrame(rows, columns=columns)
 
         acro_session = acro_module.ACRO(suppress=True)
@@ -283,11 +286,8 @@ class AcroTableCounts(BaseLocalProcessing):
         acro_session.finalise(output_folder)
 
         zip_path = shutil.make_archive("acro_output", "zip", output_folder)
-        return {
-            "acro_output_zip": zip_path,
-            "acro_status": "finalised",
-            "table": table.to_dict(),
-        }
+        shutil.copy(zip_path, self.output_folder / f"acro_output_{timestamp}.zip")
+        return table.to_dict()
 
 
 def get_local_processing_registry():

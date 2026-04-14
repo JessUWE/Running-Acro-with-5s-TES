@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from sqlalchemy.engine import Result
+from sqlalchemy.engine import Result, Engine
 import pathlib
-
+from typing import Optional
 
 class BaseLocalProcessing(ABC):
     """
@@ -11,29 +11,47 @@ class BaseLocalProcessing(ABC):
     TREs. The class handles SQL query building and optional Python-side analysis,
     returning results that can be aggregated across multiple TREs.
     """
-    def __init__(self, analysis_type: str = None, user_query: str = None, engine = None, output_folder: pathlib.Path = pathlib.Path("/outputs")):
+    analysis_type: str | None
+    user_query: str
+    engine: Engine
+    output_folder: pathlib.Path
+
+    def __init__(
+        self,
+        analysis_type: str | None = None,
+        user_query: str | None = None,
+        engine: Engine | None = None,
+        output_folder: pathlib.Path = pathlib.Path("/outputs"),
+    ):
         # Use class attribute as default if no analysis_type provided
-        self.analysis_type = analysis_type if analysis_type is not None else getattr(self.__class__, 'analysis_type', None)
+        self.analysis_type = analysis_type if analysis_type is not None else getattr(self.__class__, "analysis_type", None)
+
+        if user_query is None:
+            raise ValueError("User query must be provided")
         self.user_query = user_query
+
+        if engine is None:
+            raise ValueError("Engine must be provided")
         self.engine = engine
+
         self.output_folder = output_folder
 
     @property
     @abstractmethod
-    def description(self):
+    def description(self) -> str:
         """Description of the processing step."""
-        pass
+        raise NotImplementedError("Description must be implemented in subclass")
 
     @property
-    def processing_query(self):
+    def processing_query(self) -> str|None:
         """SQL fragment for the processing step. By default, returns None."""
         return None
 
     @property
     @abstractmethod
-    def user_query_requirements(self):
+    def user_query_requirements(self) -> str:
         """Requirements for the user query."""
-        pass
+        raise NotImplementedError("User query requirements must be implemented in subclass")
 
     def build_query(self) -> str:
         """

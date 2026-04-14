@@ -20,7 +20,7 @@ dependencies = [
   "pydantic>=2.12.5,<3.0.0",
   "polars>=1.38.1,<2.0.0",
   "acro>=0.4.5,<1.0.0",
-  "pandas>=2.0.0,<3.0.0"
+  "pandas>=2.0.0,<3.0.0",
 ]
 
 [project.optional-dependencies]

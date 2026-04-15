@@ -227,10 +227,10 @@ class AcroTableMeans(BaseLocalProcessing):
 
         ## if you don't need the acro output zipped, just finalise it to self.output_folder and avoid all the timestamps and file ops.
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_folder = f"acro_output_{timestamp}"
-        acro_session.finalise(output_folder)
+        output_folder = self.temp_folder/f"acro_output_{timestamp}"
+        acro_session.finalise(output_folder.as_posix())
 
-        zip_path = shutil.make_archive("acro_output", "zip", output_folder)
+        zip_path = shutil.make_archive((self.temp_folder/f"acro_output").as_posix(), "zip", output_folder.as_posix())
         shutil.copy(zip_path, self.output_folder / f"acro_output_{timestamp}.zip")
         
         ## should return numerical results - that's what gets processed after the end of this function
@@ -281,13 +281,17 @@ class AcroTableCounts(BaseLocalProcessing):
             margins=True,
         )
 
-        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_folder = f"acro_output_{timestamp}"
-        acro_session.finalise(output_folder)
+        output_folder = None
+        zip_path = None
 
-        zip_path = shutil.make_archive("acro_output", "zip", output_folder)
-        shutil.copy(zip_path, self.output_folder / f"acro_output_{timestamp}.zip")
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_folder = self.temp_folder / f"acro_output_{timestamp}"
+        acro_session.finalise(output_folder.as_posix())
+
+        zip_path = shutil.make_archive((self.temp_folder/f"acro_output").as_posix(), "zip", output_folder.as_posix())
+        shutil.copy(zip_path, (self.output_folder / f"acro_output_{timestamp}.zip").as_posix())
         return table.to_dict()
+
 
 
 def get_local_processing_registry():

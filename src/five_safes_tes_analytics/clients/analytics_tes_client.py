@@ -43,6 +43,8 @@ class AnalyticsTES(base_tes_client.BaseTESClient):
             "postgresServer": self.default_db_config["host"],
             "postgresPassword": self.default_db_config["password"],
             "postgresUsername": self.default_db_config["username"],
+            "MPLCONFIGDIR":"/tmp/matplotlib",
+            "XDG_CACHE_HOME": "/tmp/.cache"
         }
         return None
 

@@ -265,19 +265,39 @@ if __name__ == "__main__":
     sql_schema = os.getenv("postgresSchema", "public")
     
     # Example: Run variance analysis first, then mean analysis on the same data
-    query_template = Template("""SELECT value_as_number FROM $sql_schema.measurement 
-WHERE measurement_concept_id = 43055141
-AND value_as_number IS NOT NULL""")
+    #query_template = Template("""SELECT value_as_number FROM $sql_schema.measurement 
+    #WHERE measurement_concept_id = 43055141
+    #AND value_as_number IS NOT NULL""")
     
+    query_template = Template("""
+    SELECT
+    g.concept_name AS sex,
+    e.concept_name AS ethnicity,
+    m.value_as_number AS bmi_value
+    FROM $sql_schema.measurement m
+    JOIN $sql_schema.person p
+    ON p.person_id = m.person_id
+    LEFT JOIN $sql_schema.concept g
+    ON g.concept_id = p.gender_concept_id
+    LEFT JOIN $sql_schema.concept e
+    ON e.concept_id = p.ethnicity_concept_id
+    WHERE m.measurement_concept_id = 3038553
+    AND m.value_as_number IS NOT NULL
+    AND g.concept_name IS NOT NULL
+    AND e.concept_name IS NOT NULL
+    """)
+
+
+
     user_query = query_template.safe_substitute(sql_schema=sql_schema)
     
-    print("Running mean analysis...")
+    print("Running AcroTableMeans analysis...")
     mean_result = analysis_runner.run_analysis(
-        analysis_type="mean",
-        task_name="DEMO: mean analysis test",
+        analysis_type="acro_crosstab_mean",
+        task_name="DEMO: AcroTableMeans analysis test",
         user_query=user_query,
     )
     
     # Show what aggregated data we have stored
-    print(f"Mean analysis result: {mean_result['result']}")
+    print(f"AcroTableMeans analysis result: {mean_result['result']}")
     print(f"Stored aggregated data: {analysis_runner.aggregated_data}")

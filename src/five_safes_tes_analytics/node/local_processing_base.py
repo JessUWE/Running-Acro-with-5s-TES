@@ -35,6 +35,7 @@ class BaseLocalProcessing(ABC):
         self.engine = engine
 
         self.output_folder = output_folder
+        self.temp_folder = pathlib.Path("/tmp")
 
     @property
     @abstractmethod
